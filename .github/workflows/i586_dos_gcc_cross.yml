@@ -33,15 +33,15 @@ jobs:
     - run: dosemu --version
     - name: Perform round-trip tests
       run: |
-        cd tests
-        ln -s ../compression-corpus/ corpus
+        cd fastlz/tests_c
+        ln -s ../../compression-corpus/ corpus
         make test_roundtrip TEST_ROUNDTRIP=testrr
         file ./testrr.exe
         dosemu -dumb -K . -t -E "testrr corpus/"
     - name: 'Build and run example: 6pack and 6unpack'
       run: |
-        cd examples
-        ln -s ../compression-corpus/enwik/enwik8.txt enwik8.txt
+        cd fastlz/examples
+        ln -s ../../compression-corpus/enwik/enwik8.txt enwik8.txt
         make
         file ./6pack.exe
         dosemu -K . -t -E "6pack.exe -v"

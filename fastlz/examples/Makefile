@@ -1,0 +1,12 @@
+CFLAGS?=-Wall -std=c90
+
+all: 6pack 6unpack
+
+6pack: 6pack.c ../vendor/fastlz.c
+	$(CC) -o 6pack $(CFLAGS) -I../vendor 6pack.c ../vendor/fastlz.c
+
+6unpack: 6unpack.c ../vendor/fastlz.c
+	$(CC) -o 6unpack $(CFLAGS) -I../vendor 6unpack.c ../vendor/fastlz.c
+
+clean :
+	$(RM) 6pack 6unpack *.o

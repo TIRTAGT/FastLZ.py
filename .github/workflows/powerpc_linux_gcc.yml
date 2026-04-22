@@ -27,15 +27,15 @@ jobs:
       run: /opt/powerpc-linux-musl-cross/bin/powerpc-linux-musl-gcc --version
     - name: Perform round-trip tests
       run: |
-        cd tests
+        cd fastlz/tests_c
         make test_roundtrip CFLAGS=-static
         file ./test_roundtrip
         qemu-ppc ./test_roundtrip
     - name: 'Build and run example: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         make CFLAGS=-static
         qemu-ppc ./6pack -v
-        qemu-ppc ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        qemu-ppc ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         qemu-ppc ./6unpack -v
         qemu-ppc ./6unpack archive.6pk

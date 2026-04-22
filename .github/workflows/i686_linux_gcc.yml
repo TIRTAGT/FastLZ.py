@@ -27,15 +27,15 @@ jobs:
       run: /opt/i686-linux-musl-cross/bin/i686-linux-musl-gcc --version
     - name: Perform round-trip tests
       run: |
-        cd tests
+        cd fastlz/tests_c
         make test_roundtrip CFLAGS=-static
         file ./test_roundtrip
         qemu-i386 ./test_roundtrip
     - name: 'Build and run examples: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         make CFLAGS=-static
         qemu-i386 ./6pack -v
-        qemu-i386 ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        qemu-i386 ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         qemu-i386 ./6unpack -v
         qemu-i386 ./6unpack archive.6pk

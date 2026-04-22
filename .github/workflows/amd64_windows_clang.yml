@@ -21,14 +21,14 @@ jobs:
       with:
         install: make mingw-w64-x86_64-clang
     - run: clang --version
-    - run: cd tests && make roundtrip
+    - run: cd fastlz/tests_c && make roundtrip
       name: Perform round-trip tests
     - name: 'Build examples: 6pack and 6unpack'
-      run: cd examples && make
+      run: cd fastlz/examples && make
     - name: 'Run examples: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         ./6pack -v
-        ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         ./6unpack -v
         ./6unpack archive.6pk

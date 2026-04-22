@@ -12,7 +12,7 @@ jobs:
     - run: sudo apt install -y clang-format-6.0
       name: Install clang-format
     - run: clang-format-6.0 --version
-    - run: bash tools/format-code.sh
+    - run: bash fastlz/tools/format-code.sh
       name: Run code formatter
     - run: git diff
     - run: git diff --quiet HEAD

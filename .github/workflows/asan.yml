@@ -19,11 +19,11 @@ jobs:
         unzip enwik8.zip
     - run: sudo apt install -y make gcc
     - run: gcc --version
-    - run: cd tests && make roundtrip
+    - run: cd fastlz/tests_c && make roundtrip
       name: Perform round-trip tests
       env:
         CFLAGS: "-g -fno-omit-frame-pointer -fsanitize=address"
-    - run: cd tests && make roundtrip
+    - run: cd fastlz/tests_c && make roundtrip
       name: Perform round-trip tests with FASTLZ_USE_MEMMOVE=0
       env:
         CFLAGS: "-g -fno-omit-frame-pointer -fsanitize=address -DFASTLZ_USE_MEMMOVE=0"

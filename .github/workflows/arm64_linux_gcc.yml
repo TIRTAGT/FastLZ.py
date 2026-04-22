@@ -27,15 +27,15 @@ jobs:
       run: /opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc --version
     - name: Perform round-trip tests
       run: |
-        cd tests
+        cd fastlz/tests_c
         make test_roundtrip CFLAGS=-static
         file ./test_roundtrip
         qemu-aarch64 ./test_roundtrip
     - name: 'Build and run example: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         make CFLAGS=-static
         qemu-aarch64 ./6pack -v
-        qemu-aarch64 ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        qemu-aarch64 ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         qemu-aarch64 ./6unpack -v
         qemu-aarch64 ./6unpack archive.6pk

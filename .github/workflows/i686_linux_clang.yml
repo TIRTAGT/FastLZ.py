@@ -22,15 +22,15 @@ jobs:
     - run: clang --version
     - name: Perform round-trip tests
       run: |
-        cd tests
+        cd fastlz/tests_c
         make test_roundtrip CFLAGS="-static -m32"
         file ./test_roundtrip
         qemu-i386 ./test_roundtrip
     - name: 'Build and run example: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         make CFLAGS="-static -m32"
         qemu-i386 ./6pack -v
-        qemu-i386 ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        qemu-i386 ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         qemu-i386 ./6unpack -v
         qemu-i386 ./6unpack archive.6pk

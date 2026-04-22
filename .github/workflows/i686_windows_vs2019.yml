@@ -19,14 +19,14 @@ jobs:
       with:
         arch: x86
     - run: cl
-    - run: cd tests && mingw32-make -f Makefile.win roundtrip
+    - run: cd fastlz/tests_c && mingw32-make -f Makefile.win roundtrip
       name: Perform round-trip tests
     - name: 'Build examples: 6pack and 6unpack'
-      run: cd examples && make -f Makefile.win
+      run: cd fastlz/examples && make -f Makefile.win
     - name: 'Run examples: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         ./6pack -v
-        ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         ./6unpack -v
         ./6unpack archive.6pk

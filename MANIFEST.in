@@ -1,0 +1,7 @@
+include LICENSE.MIT
+include README.md
+include fastlz/_fastlzmodule.c
+recursive-include fastlz/vendor *.c *.h
+recursive-include fastlz/examples *.c Makefile Makefile.win
+recursive-include fastlz/tests_c *.c Makefile Makefile.win
+recursive-include fastlz/tools *.sh

@@ -27,15 +27,15 @@ jobs:
       run: /opt/mips64el-linux-musl-cross/bin/mips64el-linux-musl-gcc --version
     - name: Perform round-trip tests
       run: |
-        cd tests
+        cd fastlz/tests_c
         make test_roundtrip CFLAGS=-static
         file ./test_roundtrip
         qemu-mips64el ./test_roundtrip
     - name: 'Build and run example: 6pack and 6unpack'
       run: |
-        cd examples
+        cd fastlz/examples
         make CFLAGS=-static
         qemu-mips64el ./6pack -v
-        qemu-mips64el ./6pack ../compression-corpus/enwik/enwik8.txt archive.6pk
+        qemu-mips64el ./6pack ../../compression-corpus/enwik/enwik8.txt archive.6pk
         qemu-mips64el ./6unpack -v
         qemu-mips64el ./6unpack archive.6pk
