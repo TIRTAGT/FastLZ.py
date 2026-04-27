@@ -75,7 +75,7 @@ void matthew_debug(py::buffer input) {
  * @throws std::invalid_argument If the buffer is not 1D or not a byte buffer.
  * @throws std::overflow_error If the total buffer size would exceed addressable memory.
  */
-pair<unique_ptr<byte[]>, size_t> py_memory_copy_to_contiguous(py::buffer_info input_info) {
+pair<unique_ptr<byte[]>, size_t> py_memory_copy_to_contiguous(const py::buffer_info& input_info) {
 	// No idea why .size and .itemsize are not unsigned...
 	if (input_info.size < 0 || input_info.itemsize < 0) {
 		throw range_error("Buffer size/entries must not be negative values");

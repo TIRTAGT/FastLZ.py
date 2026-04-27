@@ -1,4 +1,4 @@
 build/
-/*.so
-/*.pyd
-/*.dll
+*.so
+*.pyd
+*.dll
