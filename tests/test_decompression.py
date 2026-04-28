@@ -2,7 +2,6 @@ import fastlzpy
 
 def test_compress_decompress_roundtrip(data: bytes, description: str):
 	print(f"\n=== {description} ===")
-	print(f"Input: {list(data)}")
 
 	# Pre-allocate output buffer (worst case: input + 400 bytes per fastlz docs)
 	output_buf = bytearray(len(data) + 400)
@@ -42,16 +41,10 @@ if __name__ == "__main__":
 
 	# Strided input (non-contiguous)
 	strided = memoryview(test_array)[0:10:2]
-	print(f"\n=== Strided [0:10:2] ===")
-	print(f"is_contiguous: {fastlzpy.py_memory_is_contiguous(strided)}")
-	print(f"copy: {list(fastlzpy.py_memory_copy_to_contiguous(strided))}")
 	test_compress_decompress_roundtrip(bytes(strided), "Strided input [0:10:2]")
 
 	# Negative stride (non-contiguous)
 	neg_stride = memoryview(test_array)[9:2:-1]
-	print(f"\n=== Negative stride [9:2:-1] ===")
-	print(f"is_contiguous: {fastlzpy.py_memory_is_contiguous(neg_stride)}")
-	print(f"copy: {list(fastlzpy.py_memory_copy_to_contiguous(neg_stride))}")
 	test_compress_decompress_roundtrip(bytes(neg_stride), "Negative stride input [9:2:-1]")
 
 	# Larger data for better compression ratio

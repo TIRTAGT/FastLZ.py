@@ -14,14 +14,14 @@ using std::memcpy;
 using std::move;
 
 /**
- * @brief Checks whether a 1D pybind11 byte buffer is contiguous.
+ * @brief Checks whether a 1D pybind11 byte buffer is C-contiguous
  *
- * @param input_info The buffer metadata to inspect.
- * @return true if the buffer is contiguous, empty, or scalar.
- * @throws std::range_error If buffer size/itemsize metadata is negative.
- * @throws std::invalid_argument If the buffer is not 1D or not a byte buffer.
+ * @param input_info The source buffer info
+ * @return true if the buffer is C-contiguous
+ * @throws std::range_error If buffer size/itemsize metadata is negative
+ * @throws std::invalid_argument If the buffer is not 1D or not a byte buffer
  */
-bool py_memory_is_contiguous(const py::buffer_info& input_info) {
+bool is_memory_c_contiguous(const py::buffer_info& input_info) {
 	// No idea why .size and .itemsize are not unsigned...
 	if (input_info.size < 0 || input_info.itemsize < 0) {
 		throw range_error("Buffer size/entries must not be negative values");
@@ -53,7 +53,7 @@ bool py_memory_is_contiguous(const py::buffer_info& input_info) {
 }
 
 #if DEBUG_MODE == 1
-void matthew_debug(py::buffer input) {
+void buffer_info(py::buffer input) {
 	py::buffer_info input_info = input.request();
 
 	println("Buffer info:");
@@ -69,15 +69,15 @@ void matthew_debug(py::buffer input) {
 #endif
 
 /**
- * @brief Copies a potentially strided 1D pybind11 byte buffer into a contiguous allocation.
+ * @brief Copies a potentially strided 1D pybind11 byte buffer into a contiguous allocation
  *
- * @param input_info The buffer metadata describing the source data.
- * @return A pair containing the contiguous buffer and its total size in bytes.
- * @throws std::range_error If buffer size/itemsize metadata is negative.
- * @throws std::invalid_argument If the buffer is not 1D or not a byte buffer.
- * @throws std::overflow_error If the total buffer size would exceed addressable memory.
+ * @param input_info The source buffer info
+ * @return A pair containing the contiguous buffer and its total size in bytes
+ * @throws std::range_error If buffer size/itemsize metadata is negative
+ * @throws std::invalid_argument If the buffer is not 1D or not a byte buffer
+ * @throws std::overflow_error If the total buffer size would exceed addressable memory
  */
-pair<unique_ptr<byte[]>, size_t> py_memory_copy_to_contiguous(const py::buffer_info& input_info) {
+pair<unique_ptr<byte[]>, size_t> copy_to_contiguous(const py::buffer_info& input_info) {
 	// No idea why .size and .itemsize are not unsigned...
 	if (input_info.size < 0 || input_info.itemsize < 0) {
 		throw range_error("Buffer size/entries must not be negative values");

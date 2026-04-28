@@ -1,4 +1,4 @@
-#include "../FastLZ/fastlz.h"
+#include "../src/FastLZ/fastlz.h"
 #include "data.cpp"
 
 #include <cstddef>

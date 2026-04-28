@@ -26,11 +26,11 @@ int compress_level(int level, py::buffer input, py::buffer output) {
 		throw overflow_error("Output size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	if (!py_memory_is_contiguous(output_info)) {
+	if (!is_memory_c_contiguous(output_info)) {
 		throw invalid_argument("Output buffer must be contiguous");
 	}
 
-	if (py_memory_is_contiguous(input_info)) {
+	if (is_memory_c_contiguous(input_info)) {
 		return fastlz_compress_level(
 			level,
 			input_info.ptr,
@@ -39,7 +39,7 @@ int compress_level(int level, py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = py_memory_copy_to_contiguous(input_info);
+	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_compress_level(
 		level,
 		input_copy.first.get(),
@@ -60,11 +60,11 @@ int decompress(py::buffer input, py::buffer output) {
 		throw overflow_error("Output size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	if (!py_memory_is_contiguous(output_info)) {
+	if (!is_memory_c_contiguous(output_info)) {
 		throw invalid_argument("Output buffer must be contiguous");
 	}
 
-	if (py_memory_is_contiguous(input_info)) {
+	if (is_memory_c_contiguous(input_info)) {
 		return fastlz_decompress(
 			input_info.ptr,
 			(int) input_info.size,
@@ -73,7 +73,7 @@ int decompress(py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = py_memory_copy_to_contiguous(input_info);
+	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_decompress(
 		input_copy.first.get(),
 		(int) input_copy.second,
@@ -95,7 +95,7 @@ py::memoryview decompress_dynamic(py::buffer input, int max_output_size = DEFAUL
 		throw overflow_error("Input size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = py_memory_copy_to_contiguous(input_info);
+	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 
 	const void* input_ptr = input_copy.first.get();
 	ssize_t input_size = static_cast<ssize_t>(input_copy.second);
@@ -144,7 +144,7 @@ py::memoryview compress_level_dynamic(int level, py::buffer input, int max_outpu
 		throw overflow_error("Input size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	if (py_memory_is_contiguous(input_info)) {
+	if (is_memory_c_contiguous(input_info)) {
 		int current_alloc = static_cast<int>(input_info.size) + 400;
 		while (current_alloc <= max_output_size) {
 			vector<char> output(current_alloc);
@@ -172,7 +172,7 @@ py::memoryview compress_level_dynamic(int level, py::buffer input, int max_outpu
 		}
 	}
 	else {
-		pair<unique_ptr<std::byte[]>, size_t> input_copy = py_memory_copy_to_contiguous(input_info);
+		pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 		int current_alloc = static_cast<int>(input_copy.second) + 400;
 		while (current_alloc <= max_output_size) {
 			vector<char> output(current_alloc);
@@ -219,11 +219,11 @@ int compress(py::buffer input, py::buffer output) {
 		throw overflow_error("Output size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	if (!py_memory_is_contiguous(output_info)) {
+	if (!is_memory_c_contiguous(output_info)) {
 		throw invalid_argument("Output buffer must be contiguous");
 	}
 
-	if (py_memory_is_contiguous(input_info)) {
+	if (is_memory_c_contiguous(input_info)) {
 		return fastlz_compress(
 			input_info.ptr,
 			(int) input_info.size,
@@ -231,7 +231,7 @@ int compress(py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = py_memory_copy_to_contiguous(input_info);
+	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_compress(
 		input_copy.first.get(),
 		(int) input_copy.second,
@@ -284,26 +284,25 @@ PYBIND11_MODULE(fastlzpy, m) {
 
 #if DEBUG_MODE == 1
 	m.def(
-		"matthew_debug",
-		&matthew_debug,
+		"buffer_info",
+		&buffer_info,
 		"This is a debug function"
 	);
-#endif
 
 	m.def(
-		"py_memory_is_contiguous",
+		"is_memory_c_contiguous",
 		[](py::buffer input) -> bool {
 			py::buffer_info info = input.request();
-			return py_memory_is_contiguous(info);
+			return is_memory_c_contiguous(info);
 		},
 		"Check if a 1D byte buffer is contiguous"
 	);
 
 	m.def(
-		"py_memory_copy_to_contiguous",
+		"copy_to_contiguous",
 		[](py::buffer input) -> py::memoryview {
 			py::buffer_info info = input.request();
-			pair<unique_ptr<std::byte[]>, size_t> result = py_memory_copy_to_contiguous(info);
+			pair<unique_ptr<std::byte[]>, size_t> result = copy_to_contiguous(info);
 			if (result.first == nullptr) {
 				return py::memoryview(py::bytes());
 			}
@@ -313,4 +312,6 @@ PYBIND11_MODULE(fastlzpy, m) {
 		},
 		"Copy a potentially strided 1D byte buffer into a contiguous Python bytes object"
 	);
+#endif
+
 }
