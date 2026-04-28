@@ -15,3 +15,4 @@ requires-python = ">=3.8"
 [tool.scikit-build]
 cmake.version = ">=4.3"
 cmake.source-dir = "src"
+sdist.include = ["src/FastLZ/**"]
