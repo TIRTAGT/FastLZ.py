@@ -1,12 +1,20 @@
 cmake_minimum_required(VERSION 4.3)
-project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
+project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 
-# Find pybind11 (provided by the 'requires' in pyproject.toml)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 find_package(pybind11 CONFIG REQUIRED)
 
-# Define the extension module
-# The name should match the module name in your C++ code
-pybind11_add_module(fastlzpy fastlzpy/bridge.cpp)
+file(GLOB_RECURSE SOURCE_FILES
+	"./*.cpp"
+	"./FastLZ/fastlz.c"
+)
 
-# Install the module into the package directory
-install(TARGETS fastlzpy DESTINATION fastlzpy)
+pybind11_add_module(
+	fastlzpy
+	${SOURCE_FILES}
+)
+
+install(TARGETS fastlzpy DESTINATION .)
