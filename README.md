@@ -4,11 +4,59 @@ Python wrapper for the [FastLZ](https://github.com/ariya/fastlz) C library, base
 
 ## Building
 
-Requires a C++26 compatible compiler (GCC 15+ or Clang 22+).
+### Build Dependencies
+- C++26 compatible compiler (Tested on GCC 15+ or Clang 22+)
+- [CMake](https://cmake.org/) v4.3+
+
+### Python Build Dependencies
+- [build](https://pypi.org/project/build/) v1.4+
+- [pybind11-stubgen](https://pypi.org/project/pybind11-stubgen/)
+- [pybind11](https://pypi.org/project/pybind11/) v3.0+
+- [scikit-build-core](https://pypi.org/project/scikit-build-core/) v0.12+
+
+### Build Instructions
+
+1. Clone the repository and navigate to the project directory:
+	```bash
+	git clone https://github.com/TIRTAGT/FastLZ.py.git
+	cd FastLZ.py
+	```
+
+2. (Optional) Create and activate a virtual environment:
+	```bash
+	python -m venv venv
+	source venv/bin/activate
+	```
+
+	> For Windows users, activate with `venv\Scripts\activate`.
+
+3. Install python build dependencies listed above:
+	```bash
+	pip install build pybind11-stubgen pybind11 scikit-build-core
+	```
+
+4. Build the module:
+	```
+	python -m build
+	```
+
+This will create a wheel file (`*.whl`) in the `dist/` directory.
+
+To install it, run:
 
 ```bash
-python setup.py build_ext --inplace
+pip install dist/fastlzpy-*.whl
 ```
+
+### Debug Mode
+
+The `DEBUG_MODE` flag controls debug functionality. By default, `DEBUG_MODE=1` enables the `matthew_debug` function. To disable debug features, compile with `-DDEBUG_MODE=0`:
+
+```bash
+DEBUG_MODE=0 python setup.py build_ext --inplace
+```
+
+Or add `#define DEBUG_MODE 0` to your source before including the headers.
 
 ## Usage
 
@@ -95,4 +143,4 @@ fastlzpy.matthew_debug(memoryview(b"hello"))
 | `fastlz_decompress_dynamic` | `(input: Buffer, max_output_size: int = 8_388_608) -> bytes` | Decompress with automatic buffer sizing. Returns `bytes`. |
 | `py_memory_is_contiguous` | `(input: Buffer) -> bool` | Returns `True` if the buffer is 1D, contiguous, and byte-formatted. |
 | `py_memory_copy_to_contiguous` | `(input: Buffer) -> bytes` | Copies a strided 1D byte buffer into a contiguous `bytes` object. |
-| `matthew_debug` | `(input: Buffer) -> None` | Prints buffer metadata (ptr, shape, strides, format, etc.). |
+| `matthew_debug` | `(input: Buffer) -> None` | Prints buffer metadata (ptr, shape, strides, format, etc.). Only available when `DEBUG_MODE=1`. |

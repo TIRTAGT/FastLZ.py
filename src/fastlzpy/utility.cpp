@@ -52,6 +52,7 @@ bool py_memory_is_contiguous(const py::buffer_info& input_info) {
 	return input_offset == static_cast<ssize_t>(item_size);
 }
 
+#if DEBUG_MODE == 1
 void matthew_debug(py::buffer input) {
 	py::buffer_info input_info = input.request();
 
@@ -65,6 +66,7 @@ void matthew_debug(py::buffer input) {
 	println("  Strides: {}", input_info.strides);
 	println("  Readonly: {}", input_info.readonly);
 }
+#endif
 
 /**
  * @brief Copies a potentially strided 1D pybind11 byte buffer into a contiguous allocation.

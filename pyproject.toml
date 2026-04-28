@@ -1,0 +1,17 @@
+[build-system]
+requires = ["scikit-build-core>=0.12", "pybind11>=3.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "fastlzpy"
+version = "0.1.0"
+description = "A Python wrapper for the FastLZ compression library"
+authors = [
+	{name = "Matthew Tirtawidjaja", email = "matthew@tirtagt.com"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.scikit-build]
+cmake.version = ">=4.3"
+cmake.source-dir = "src"
