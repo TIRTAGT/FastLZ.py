@@ -24,13 +24,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install build dependencies
+      - name: Install GCC 13 (Ubuntu)
+        if: runner.os == 'Linux'
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build pybind11 pybind11-stubgen scikit-build-core cmake
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13
+          echo "CC=gcc-13" >> $GITHUB_ENV
+          echo "CXX=g++-13" >> $GITHUB_ENV
+
+      - name: Install build dependencies
+        run: pip install build pybind11 pybind11-stubgen scikit-build-core cmake
 
       - name: Build wheel (DEBUG_MODE=1)
-        run: python -m build -Ccmake.define.DEBUG_MODE=1
+        run: python -m build -C=cmake.define.DEBUG_MODE=1
 
       - name: Upload wheel
         uses: actions/upload-artifact@v4
@@ -55,6 +62,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install GCC 13 (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13
+          echo "CC=gcc-13" >> $GITHUB_ENV
+          echo "CXX=g++-13" >> $GITHUB_ENV
 
       - name: Install CMake
         run: |
