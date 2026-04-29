@@ -24,14 +24,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install GCC 13 (Ubuntu)
+      - name: Install GCC 15 (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13 libstdc++-13-dev
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
+          sudo apt-get install -y gcc-15 g++-15 libstdc++-15-dev
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
 
       - name: Install build dependencies
         run: pip install build pybind11 pybind11-stubgen scikit-build-core cmake
@@ -63,14 +63,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install GCC 13 (Ubuntu)
+      - name: Install GCC 15 (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13 libstdc++-13-dev
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
+          sudo apt-get install -y gcc-15 g++-15 libstdc++-15-dev
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
 
       - name: Install CMake
         run: |
