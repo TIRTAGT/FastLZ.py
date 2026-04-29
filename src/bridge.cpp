@@ -5,6 +5,13 @@
 #include <memory>
 #include <vector>
 
+#if defined(_MSC_VER)
+
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+
+#endif
+
 namespace py = pybind11;
 
 using std::numeric_limits;
