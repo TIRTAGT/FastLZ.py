@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
+          sudo apt-get install -y gcc-13 g++-13 libstdc++-13-dev
           echo "CC=gcc-13" >> $GITHUB_ENV
           echo "CXX=g++-13" >> $GITHUB_ENV
 
@@ -37,7 +37,7 @@ jobs:
         run: pip install build pybind11 pybind11-stubgen scikit-build-core cmake
 
       - name: Build wheel (DEBUG_MODE=1)
-        run: python -m build -C=cmake.define.DEBUG_MODE=1
+        run: python -m build --config-setting=cmake.define.DEBUG_MODE=1
 
       - name: Upload wheel
         uses: actions/upload-artifact@v4
@@ -68,7 +68,7 @@ jobs:
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
-          sudo apt-get install -y gcc-13 g++-13
+          sudo apt-get install -y gcc-13 g++-13 libstdc++-13-dev
           echo "CC=gcc-13" >> $GITHUB_ENV
           echo "CXX=g++-13" >> $GITHUB_ENV
 
