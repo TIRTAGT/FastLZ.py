@@ -1,0 +1,155 @@
+name: CI (Release mode)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-slim
+          - macos-26-intel
+          - macos-26
+          - windows-2025
+          - windows-2025-vs2026
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+          - "3.15.0-alpha.8"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install newer C compiler (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y gcc-15 g++-15 libstdc++-15-dev
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
+
+      - name: Install build dependencies
+        run: pip install build pybind11 pybind11-stubgen scikit-build-core cmake
+
+      - name: Build wheel (Release)
+        run: python -m build
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}-${{ matrix.python-version }}
+          path: dist/*.whl
+
+  test-cpp:
+    name: Test C++ (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-slim
+          - macos-26-intel
+          - macos-26
+          - windows-2025
+          - windows-2025-vs2026
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install GCC 15 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y gcc-15 g++-15 libstdc++-15-dev
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
+
+      - name: Install CMake
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install cmake
+
+      - name: Configure C++ tests
+        run: cmake -S tests -B build/tests
+
+      - name: Build C++ tests
+        run: cmake --build build/tests --config Release
+
+      - name: Run C++ tests (Windows)
+        if: runner.os == 'Windows'
+        run: ./build/tests/Release/fastlz_cpp_tests.exe
+
+      - name: Run C++ tests (Unix)
+        if: runner.os != 'Windows'
+        run: ./build/tests/fastlz_cpp_tests
+
+  test-python:
+    name: Test Python (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    needs:
+      - build
+      - test-cpp
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-slim
+          - macos-26-intel
+          - macos-26
+          - windows-2025
+          - windows-2025-vs2026
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+          - "3.15.0-alpha.8"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: release-wheel-${{ matrix.os }}-${{ matrix.python-version }}
+          path: dist
+
+      - name: Install package wheel
+        shell: bash
+        run: python -m pip install dist/*.whl
+
+      - name: Run Python tests
+        run: python tests/test_decompression.py
