@@ -20,6 +20,7 @@ using std::overflow_error;
 using std::pair;
 using std::unique_ptr;
 using std::vector;
+using std::byte;
 
 int compress_level(int level, py::buffer input, py::buffer output) {
 	py::buffer_info input_info = input.request();
@@ -46,7 +47,7 @@ int compress_level(int level, py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
+	pair<unique_ptr<byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_compress_level(
 		level,
 		input_copy.first.get(),
@@ -80,7 +81,7 @@ int decompress(py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
+	pair<unique_ptr<byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_decompress(
 		input_copy.first.get(),
 		(int) input_copy.second,
@@ -92,45 +93,65 @@ int decompress(py::buffer input, py::buffer output) {
 int DEFAULT_MAX_ALLOC_SIZE = 1024 * 1024 * 8; // 8 MB
 
 py::memoryview decompress_dynamic(py::buffer input, int max_output_size = DEFAULT_MAX_ALLOC_SIZE) {
+	printf("TEST");
+
 	if (max_output_size <= 0 || max_output_size > numeric_limits<int>::max()) {
 		throw invalid_argument("Output size must be a positive integer less than or equal to 2^31 - 1");
 	}
 
-	py::buffer_info input_info = input.request();
+	#if DEBUG_MODE == 1
+	printf("Starting decompression with max_output_size = %d bytes\n", max_output_size);
+	#endif
 
-	if (input_info.size > numeric_limits<int>::max()) {
+	pair<unique_ptr<byte[]>, size_t> input_copy = copy_to_contiguous(input.request());
+
+	#if DEBUG_MODE == 1
+	printf("Input size after copying to contiguous buffer: %zu bytes\n", input_copy.second);
+	#endif
+
+	if (input_copy.second > numeric_limits<int>::max()) {
 		throw overflow_error("Input size exceeds FastLZ maximum of 2^31-1");
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
+	if (input_copy.second == 0) {
+		throw invalid_argument("Input must not be empty");
+	}
 
 	const void* input_ptr = input_copy.first.get();
-	ssize_t input_size = static_cast<ssize_t>(input_copy.second);
+	int input_size = static_cast<int>(input_copy.second);
 
-	int current_alloc = input_size * 4;
+	size_t current_alloc = static_cast<size_t>(input_size);
+	size_t max_overflow_alloc = numeric_limits<size_t>::max() / 2;
+
+	#if DEBUG_MODE == 1
+	printf("Initial output buffer size set to input size: %zu bytes\n", current_alloc);
+	#endif
+
 	while (current_alloc <= max_output_size) {
-		vector<char> output(current_alloc);
+		unique_ptr<byte[]> output(new byte[current_alloc]);
 		int decompressed_size = fastlz_decompress(
 			input_ptr,
-			(int) input_size,
-			output.data(),
+			input_size,
+			output.get(),
 			current_alloc
 		);
 
 		if (decompressed_size > 0) {
-			py::bytes result(output.data(), decompressed_size);
+			char* output_ptr = reinterpret_cast<char*>(output.get());
+			py::bytes result(output_ptr, decompressed_size);
 			return py::memoryview(result);
 		}
 
-		int new_limit = current_alloc * 2;
-		if (new_limit > max_output_size) {
-			new_limit = max_output_size;
-		}
-		else if (new_limit <= current_alloc) {
-			throw overflow_error("Data is invalid or too large to decompress");
+		// Prevent potential overflow when doubling current_alloc
+		if (current_alloc > max_overflow_alloc) {
+			throw overflow_error("Output buffer overflow during decompression");
 		}
 
-		current_alloc = new_limit;
+		current_alloc = current_alloc * 2;
+
+		#if DEBUG_MODE == 1
+		printf("Increasing output buffer size to %zu bytes\n", current_alloc);
+		#endif
 	}
 
 	throw overflow_error("Data is invalid or max_output_size is too small");
@@ -179,7 +200,7 @@ py::memoryview compress_level_dynamic(int level, py::buffer input, int max_outpu
 		}
 	}
 	else {
-		pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
+		pair<unique_ptr<byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 		int current_alloc = static_cast<int>(input_copy.second) + 400;
 		while (current_alloc <= max_output_size) {
 			vector<char> output(current_alloc);
@@ -238,7 +259,7 @@ int compress(py::buffer input, py::buffer output) {
 		);
 	}
 
-	pair<unique_ptr<std::byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
+	pair<unique_ptr<byte[]>, size_t> input_copy = copy_to_contiguous(input_info);
 	return fastlz_compress(
 		input_copy.first.get(),
 		(int) input_copy.second,
@@ -250,18 +271,26 @@ PYBIND11_MODULE(fastlzpy, m) {
 	m.def(
 		"fastlz_compress_level",
 		&compress_level,
-		"Compress a block of data in the input buffer");
+		"Compress a block of data in the input buffer",
+		py::arg("level"),
+		py::arg("input"),
+		py::arg("output")
+	);
 
 	m.def(
 		"fastlz_decompress",
 		&decompress,
-		"Decompress a block of compressed data"
+		"Decompress a block of compressed data",
+		py::arg("input"),
+		py::arg("output")
 	);
 
 	m.def(
 		"fastlz_compress",
 		&compress,
-		"This is similar to fastlz_compress_level above, but with the level automatically chosen."
+		"This is similar to fastlz_compress_level above, but with the level automatically chosen.",
+		py::arg("input"),
+		py::arg("output")
 	);
 
 	m.def(
@@ -309,7 +338,7 @@ PYBIND11_MODULE(fastlzpy, m) {
 		"copy_to_contiguous",
 		[](py::buffer input) -> py::memoryview {
 			py::buffer_info info = input.request();
-			pair<unique_ptr<std::byte[]>, size_t> result = copy_to_contiguous(info);
+			pair<unique_ptr<byte[]>, size_t> result = copy_to_contiguous(info);
 			if (result.first == nullptr) {
 				return py::memoryview(py::bytes());
 			}
