@@ -43,9 +43,10 @@ jobs:
       - name: Install newer C compiler (Linux)
         if: runner.os == 'Linux'
         run: |
+          sudo apt update
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y gcc-15 g++-15 libstdc++-15-dev
+          sudo apt update
+          sudo apt install -y gcc-15 g++-15 libstdc++-15-dev
           echo "CC=gcc-15" >> $GITHUB_ENV
           echo "CXX=g++-15" >> $GITHUB_ENV
 
