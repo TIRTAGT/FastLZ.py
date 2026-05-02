@@ -42,7 +42,7 @@ Python wrapper for the [FastLZ](https://github.com/ariya/fastlz) C library, base
 
 	> Interested to run debugging mode ? Set `DEBUG_MODE` with:
 	```bash
-	python -m build -Ccmake.define.DEBUG_MODE=1
+	python -m build --config-setting=cmake.define.DEBUG_MODE=1
 	```
 
 This will create a wheel file (`*.whl`) in the `dist/` directory.
@@ -50,7 +50,15 @@ This will create a wheel file (`*.whl`) in the `dist/` directory.
 To install it, run:
 
 ```bash
-pip install dist/fastlzpy-*.whl
+pip install --force-reinstall dist/fastlzpy-*.whl
+```
+
+### Unit Test
+
+Python side:
+
+```bash
+python -m unittest discover --start-directory="tests/" --pattern="*.py"
 ```
 
 ## Usage

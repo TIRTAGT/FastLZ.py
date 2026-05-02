@@ -4,3 +4,4 @@ dist/
 *.pyd
 *.dll
 *.egg-info/
+tests/__pycache__

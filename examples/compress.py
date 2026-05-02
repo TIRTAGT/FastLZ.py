@@ -1,13 +1,6 @@
 import argparse
 import sys
-import signal
-import select
 import fastlzpy
-
-def signal_handler(signum, frame):
-    sys.exit(128 + signum)
-
-signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Decompress data using fastlzpy.")
